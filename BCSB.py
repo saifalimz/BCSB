@@ -61,44 +61,49 @@ def BCSB():
     
     Values = []
     curVal = 0
+    curF = True
     while True:
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//div/feed-post/div/a/div/div[@class='w-100']")))
         feedPosts = driver.find_elements_by_xpath("//div/feed-post/div/a/div/div[@class='w-100']")
         
-        for feedPost in feedPosts[curVal:]:
-            try:
-                keys = []
-                value = []
-                
-                text = feedPost.find_element_by_xpath(".//div[@class='roboto-regular mt-1']").text
-                username = feedPost.find_element_by_xpath(".//div[1]/a").text
-                userURL = feedPost.find_element_by_xpath(".//div[1]/a").get_attribute('href')
-                for KEY in KEYS:
-                    if KEY in text:
-                        keys.append(KEY)
-                        
-                if len(keys) >= 1:
-                    value = [username, userURL, text] + keys
-                    if value not in Values:
-                        Values.append(value)
-                        
-                        with open("output.csv", 'a+', encoding="utf-8-sig", newline='', errors='ignore') as myfile:
-                            wr = csv.writer(myfile, dialect='excel')
-                            if header == True:
-                                wr.writerow(("Username", "Profile URL", "Post Text", "Keywords Found"))
-                                header = False
-                            wr.writerow(value)
-            except Exception as e:
-                print('Unexpected Error: ' + str(e))
-                
-        print('Number of posts:', len(feedPosts))
-        print('Number of Values:', len(Values))
-        
-        loadMore = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(text(), 'Load More')]")))
-        driver.execute_script("arguments[0].scrollIntoView();", loadMore)
-        driver.execute_script("arguments[0].click();", loadMore)
-        time.sleep(3)
-        
-        curVal = len(feedPosts)
+        if len(feedPosts) > 11000:
+            if curF == True:
+                curVal = len(feedPosts)
+                curF = False
+            for feedPost in feedPosts[curVal:]:
+                try:
+                    keys = []
+                    value = []
+                    
+                    text = feedPost.find_element_by_xpath(".//div[@class='roboto-regular mt-1']").text
+                    username = feedPost.find_element_by_xpath(".//div[1]/a").text
+                    userURL = feedPost.find_element_by_xpath(".//div[1]/a").get_attribute('href')
+                    for KEY in KEYS:
+                        if KEY in text:
+                            keys.append(KEY)
+                            
+                    if len(keys) >= 1:
+                        value = [username, userURL, text] + keys
+                        if value not in Values:
+                            Values.append(value)
+                            
+                            with open("output.csv", 'a+', encoding="utf-8-sig", newline='', errors='ignore') as myfile:
+                                wr = csv.writer(myfile, dialect='excel')
+                                if header == True:
+                                    wr.writerow(("Username", "Profile URL", "Post Text", "Keywords Found"))
+                                    header = False
+                                wr.writerow(value)
+                except Exception as e:
+                    print('Unexpected Error: ' + str(e))
+                    
+            print('Number of posts:', len(feedPosts))
+            print('Number of Values:', len(Values))
+            
+            loadMore = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(text(), 'Load More')]")))
+            driver.execute_script("arguments[0].scrollIntoView();", loadMore)
+            driver.execute_script("arguments[0].click();", loadMore)
+            time.sleep(3)
+            
+            curVal = len(feedPosts)
     
 BCSB()
