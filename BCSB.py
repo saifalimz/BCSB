@@ -23,7 +23,7 @@ options.add_argument('--allow-running-insecure-content')
 options.add_argument("--disable-extensions")
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument("--allow-insecure-localhost")
-options.add_argument(f"user-data-dir={os.path.abspath('selenium')}")
+# options.add_argument(f"user-data-dir={os.path.abspath('selenium')}")
 options.add_argument("--log-level=3")
 options.add_argument('--disable-blink-features=AutomationControlled')
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.3538.77 Safari/537.36")
@@ -62,7 +62,7 @@ def BCSB():
     Values = []
     curVal = 0
     while True:
-        WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//div/feed-post/div/a/div/div[2]/div[@class='roboto-regular mt-1']")))
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//div/feed-post/div/a/div/div[@class='w-100']")))
         feedPosts = driver.find_elements_by_xpath("//div/feed-post/div/a/div/div[@class='w-100']")
         
         for feedPost in feedPosts[curVal:]:
@@ -97,7 +97,7 @@ def BCSB():
         loadMore = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(text(), 'Load More')]")))
         driver.execute_script("arguments[0].scrollIntoView();", loadMore)
         driver.execute_script("arguments[0].click();", loadMore)
-        time.sleep(1)
+        time.sleep(3)
         
         curVal = len(feedPosts)
     
