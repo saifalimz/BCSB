@@ -23,7 +23,7 @@ options.add_argument('--allow-running-insecure-content')
 options.add_argument("--disable-extensions")
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument("--allow-insecure-localhost")
-# options.add_argument(f"user-data-dir={os.path.abspath('selenium')}")
+options.add_argument(f"user-data-dir={os.path.abspath('selenium')}")
 options.add_argument("--log-level=3")
 options.add_argument('--disable-blink-features=AutomationControlled')
 options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.3538.77 Safari/537.36")
@@ -33,51 +33,148 @@ def BCSB():
     with open('keywords.txt', 'r') as f:
         KEYS = [line.rstrip('\n') for line in f]
     
-    loginText = 'chunk voice thrive ugly doctor heavy embrace rose range divide cheese run'
+    # loginText = 'chunk voice thrive ugly doctor heavy embrace rose range divide cheese run'
     driver = webdriver.Chrome(ChromeDriverManager(cache_valid_range=30).install(), options=options)
     
     driver.get('https://bitclout.com/browse')
     time.sleep(3)
     
-    try:
-        loginPage = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Login')]")))
-        driver.execute_script("arguments[0].click();", loginPage)
+    # try:
+    #     loginPage = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Login')]")))
+    #     driver.execute_script("arguments[0].click();", loginPage)
         
-        tabX = driver.window_handles[1]
-        driver.close()
-        driver.switch_to.window(tabX)
-        time.sleep(1)
+    #     tabX = driver.window_handles[1]
+    #     driver.close()
+    #     driver.switch_to.window(tabX)
+    #     time.sleep(1)
         
-        login = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//textarea[@placeholder='Enter your secret phrase here.']")))
-        login.send_keys(loginText)
-        time.sleep(3)
-        loadAccount = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Load Account')]")))
-        loadAccount.click()
-        time.sleep(3)
-    except:
-        pass
+    #     login = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//textarea[@placeholder='Enter your secret phrase here.']")))
+    #     login.send_keys(loginText)
+    #     time.sleep(3)
+    #     loadAccount = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Load Account')]")))
+    #     loadAccount.click()
+    #     time.sleep(3)
+    # except:
+    #     pass
     
     header = True
     
     Values = []
     curVal = 0
-    curF = True
     while True:
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//div/feed-post/div/a/div/div[@class='w-100']")))
         feedPosts = driver.find_elements_by_xpath("//div/feed-post/div/a/div/div[@class='w-100']")
         
-        if len(feedPosts) > 11000:
-            if curF == True:
-                curVal = len(feedPosts)
-                curF = False
-            for feedPost in feedPosts[curVal:]:
+        for feedPost in feedPosts[curVal:]:
+            try:
+                keys = []
+                value = []
+                
+                text = feedPost.find_element_by_xpath(".//div[@class='roboto-regular mt-1']").text
+                username = feedPost.find_element_by_xpath(".//div[1]/a").text
+                userURL = feedPost.find_element_by_xpath(".//div[1]/a").get_attribute('href')
+                for KEY in KEYS:
+                    if KEY in text:
+                        keys.append(KEY)
+                        
+                if len(keys) >= 1:
+                    value = [username, userURL, text] + keys
+                    if value not in Values:
+                        Values.append(value)
+                        
+                        with open("output.csv", 'a+', encoding="utf-8-sig", newline='', errors='ignore') as myfile:
+                            wr = csv.writer(myfile, dialect='excel', quoting=csv.QUOTE_ALL)
+                            if header == True:
+                                wr.writerow(("Username", "Profile URL", "Post Text", "Keywords Found"))
+                                header = False
+                            wr.writerow(value)
+            except Exception as e:
+                print('Unexpected Error: ' + str(e) + ' (If the bot is still running, please ignore this error)')
+        
+        curVal = len(feedPosts)
+        
+        print('Total Number of posts:', len(feedPosts))
+        print('Total Matched Values:', len(Values))
+        
+        try:
+            loadMore = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(text(), 'Load More')]")))
+            driver.execute_script("arguments[0].scrollIntoView();", loadMore)
+            driver.execute_script("arguments[0].click();", loadMore)
+            time.sleep(3)
+        except:
+            break
+        
+    driver.quit()
+    
+    
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+    
+
+def BCCSB():
+    with open('keywords.txt', 'r') as f:
+        KEYS = [line.rstrip('\n') for line in f]
+    
+    # loginText = 'chunk voice thrive ugly doctor heavy embrace rose range divide cheese run'
+    driver = webdriver.Chrome(ChromeDriverManager(cache_valid_range=30).install(), options=options)
+    
+    driver.get('https://bitclout.com/browse')
+    time.sleep(3)
+    
+    # try:
+    #     loginPage = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Login')]")))
+    #     driver.execute_script("arguments[0].click();", loginPage)
+        
+    #     tabX = driver.window_handles[1]
+    #     driver.close()
+    #     driver.switch_to.window(tabX)
+    #     time.sleep(1)
+        
+    #     login = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//textarea[@placeholder='Enter your secret phrase here.']")))
+    #     login.send_keys(loginText)
+    #     time.sleep(3)
+    #     loadAccount = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Load Account')]")))
+    #     loadAccount.click()
+    #     time.sleep(3)
+    # except:
+    #     pass
+    
+    header = True
+    
+    Values = []
+    curVal = 0
+    while True:
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//div/feed-post/div/a/div/div[@class='w-100']")))
+        feedPosts = driver.find_elements_by_xpath("//div/feed-post/div/a/div/div[@class='w-100']")
+        
+        counter = curVal + 1
+        for feedPost in feedPosts[curVal:]:
+            
+            try:
+                WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//div/feed-post/div/a/div/div[@class='w-100']")))
+                feedPostsF = driver.find_elements_by_xpath("//div/feed-post/div/a/div/div[@class='w-100']")
+                driver.execute_script("arguments[0].click();", feedPostsF[counter])
+                time.sleep(3)
+            except:
+                break
+            
+            WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//div/feed-post/div/a/div/div[@class='w-100']")))
+            feedPostsX = driver.find_elements_by_xpath("//div/feed-post/div/a/div/div[@class='w-100']")
+            
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(0.2)
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(0.2)
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(1)
+            
+            for feedPostX in feedPostsX:
                 try:
                     keys = []
                     value = []
                     
-                    text = feedPost.find_element_by_xpath(".//div[@class='roboto-regular mt-1']").text
-                    username = feedPost.find_element_by_xpath(".//div[1]/a").text
-                    userURL = feedPost.find_element_by_xpath(".//div[1]/a").get_attribute('href')
+                    text = feedPostX.find_element_by_xpath(".//div[@class='roboto-regular mt-1']").text
+                    username = feedPostX.find_element_by_xpath(".//div[1]/a").text
+                    userURL = feedPostX.find_element_by_xpath(".//div[1]/a").get_attribute('href')
                     for KEY in KEYS:
                         if KEY in text:
                             keys.append(KEY)
@@ -88,22 +185,32 @@ def BCSB():
                             Values.append(value)
                             
                             with open("output.csv", 'a+', encoding="utf-8-sig", newline='', errors='ignore') as myfile:
-                                wr = csv.writer(myfile, dialect='excel')
+                                wr = csv.writer(myfile, dialect='excel', quoting=csv.QUOTE_ALL)
                                 if header == True:
                                     wr.writerow(("Username", "Profile URL", "Post Text", "Keywords Found"))
                                     header = False
                                 wr.writerow(value)
                 except Exception as e:
-                    print('Unexpected Error: ' + str(e))
-                    
-            print('Number of posts:', len(feedPosts))
-            print('Number of Values:', len(Values))
+                    print('Unexpected Error: ' + str(e) + ' (If the bot is still running, please ignore this error)')
+                
+            driver.back()
+            counter += 1
             
+            time.sleep(0.5)
+                
+        curVal = len(feedPosts)
+        
+        print('Total Number of posts:', len(feedPosts))
+        print('Total Matched Values:', len(Values))
+        
+        try:
             loadMore = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(text(), 'Load More')]")))
             driver.execute_script("arguments[0].scrollIntoView();", loadMore)
             driver.execute_script("arguments[0].click();", loadMore)
             time.sleep(3)
-            
-            curVal = len(feedPosts)
+        except:
+            break
+        
+    driver.quit()
     
-BCSB()
+BCCSB()
